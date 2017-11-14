@@ -1,0 +1,157 @@
+
+Project 9.2: Maximum arc-Chord distance edge detector
+	     
+
+**************************************
+Language: **** Java ****
+
+
+*************************************
+
+I. Inputs: 
+	a) argv[1] : A text file representng the boundary points of an object in an image.
+      The file contains image header, the label of the object, then follows by 
+	the sequence of 2D boundary points {(r1,c1), (r2, c2), ....} of the object. 
+	
+	The format of the input is as follows:
+
+	#rows #cols minVal maxVal // image header
+	label	// the label of the object
+	#pts //  the number of boundary points
+
+	r1 c1 
+	r2 c2
+	r3 c3
+	:
+	: 
+	b) argv[2]: KChord // The length of of the arc-chord, in the arc-chord distance computation
+				// it should be an odd number, use 5, 7, 9, 11 to run your program.
+
+II. Outputs: 
+	c) argv[3] -- The result of the maximum arc-chord distance of the object boundary points, 
+	as a text file representng the boundary points of the object with corner indicator.
+      This output file contains image header, the label of the object, then follows by 
+	the sequence of boundary points with corner indicator {(r1,c1, m1), (r2, c2, m2), ....} of the object. 
+
+	The format of this output file is as follows:
+ 
+	#rows #cols minVal maxVal // image header
+ 	label	// the label of the object.
+	#pts //  the number of boundary points
+ 	r1 c1 1 // not a corner
+   	r2 c2 9 // a corner
+  	r3 c3 1 // not a corner
+  	:
+   	: 
+
+
+	d) argv[4]: - Pretty print (displaying) the result of argv[3] as in an image.
+ 
+	e) argv[5]: -- for all debugging output
+
+*******************************
+III. Data structure:
+*******************************
+- An image class
+	- numRows (int) 
+	- numCols (int)
+	- minVal (int) 
+	- maxVal (int) 	
+	- constructor
+	- prettyPrint
+
+- A boundaryPt class
+
+   	frind of arcChordDistance class
+
+	- x (int)
+	- y (int)
+	- maxCount (int) // initallized to 0
+	- maxDistance (double) // to store the maximum, initallized to 0.0
+	- corner (int) // initallized to 1, not corner
+	- constructor
+			
+- A arcChordDistance class
+
+  	- Kchord  (int) // in argv[2] 
+	- numPts (int)
+     - boundPtAry (boundaryPt *) // an 1D array, need to be dynamically allocated, size of numPts
+	- chordAry (double *) // an 1D double array, size of Kchord, need to be dynamically allocated
+	- P1 (int) // first-end of the arc Chord, an index of the array, initially set to Kchord
+	- P2 (int) // second-end of the arc Chord, an index of the array, initially set to 0
+	
+	- loadData // store data to boundPtAry at a given index 
+ 	- computeDistance (P1, P2, Pt) // computes and returns the shortest distance from P to the line formed by P1 and P2
+	- findMaxDist // find the maximum distance in chordAry, and returns the index of the maximum
+	- computeLocalMaxima // P(i) is a local maxima iff the maxCount of p(i) is >= all the maxCount of 
+		// its linear neighbors: p(i-2), p(i-1), p(i+1), p(i+2)
+
+	- isCorner // p(i) is a corner (returns 9) if p(i) is a local maxima AND for all p(i-2), p(i-1), p(i+1), p(i+2)
+				// only p(i-1) or p(i+1) can be a local maxima, otherwise, p(i) is not a corner (return 1).
+			
+	- constructor
+
+		     
+*******************************
+III. Algorithms 
+*******************************
+  
+step 0: - open input files and output files
+	   (numRows, numCols, minVal, maxVal, label, numPts ) <- read from argv[1]
+
+	  - dynamically allocate boundPtAry with size of numPts
+	  - Kchord <-- get from argv[2]
+	  - dynamically allocate chordAry with size of Kchord // initiallied to 0.0
+	  - index  <-- 0
+ 	  
+step 1: (x, y) <-- read from input 
+	   loadData // store x, y to boundPtAry[index]
+	   
+step 2: index ++; 
+	  
+step 3: repeat step 1 and step 2 until the file is empty // check to make sure index == to numPt-1
+
+step 4:  intiallize P1, P2 
+
+step 5: index <-- 0
+	   currPt <-- P2 + 1
+
+step 6: dist <-- computeDistance (P1, P2, currPt )
+        store dist to chordAry[index]
+	  index ++
+	  currPt ++   //currPt = (currPt + 1) % numPts;
+
+step 7: repeat step 6 while index < Kchord
+
+step 8: print chordAry to debugging file (argv[5])
+
+step 9: maxIndex <-- findMaxDist // find the max in chordAry and return that index
+        whichIndex <-- P1 + maxIndex  	     //(p2 + maxIndex + 1) % numPts;
+	   increment bountdPtAry[whichIndex]'s maxCount by one  //if maxDist != 0.0
+        update bountdPtAry[whichIndex]'s maxDist if necessary
+
+step 10: print bountPtAry from P1 to P2 
+
+step 11: Increment P1, and P2, then mod numPts
+
+step 12: repeat step 5 to step 11 until P1 == (Kchord / 2)
+
+step 13: print the info (x, y, maxCount, maxDist) of the entire boundaryAry to argv[5] // five pts per textline
+
+step 14: compute LocalMaxima for all point in boundPtAry[index], index from 0 to numPts-1
+
+step 15: compute isCorner for all point in boundPtAry[index], index from 0 to numPts-1
+
+step 16: output the info (x, y, corner) of the entire boundaryAry to argv[3]
+
+step 17: Img <-- creat an image of size numRows by numCols
+
+step 18: for each boundaryAry[i], put it corner value at Img(x, y)
+
+step 19: prettyPrint Img to argv[4]
+
+
+ 
+
+
+
